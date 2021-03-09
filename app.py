@@ -455,7 +455,7 @@ def format_data_for_output(all_data):
     formatted_data = []
     for i in all_data:
         formatted_data.append(i)
-        formatted_data[-1][7] = format_date(i[7],config['date']['result_date_format'])
+        formatted_data[-1][7] = format_date(i[7],config['date']['db_date_format'])
 
     return formatted_data        
 
@@ -464,6 +464,25 @@ def format_date(in_date:datetime, format:str):
     formatted_date = in_date.strftime(format)
     formatted_date = formatted_date[0:-3]
     return formatted_date
+
+
+def format_data_for_csv(all_data):
+    formatted_data = []
+    for i in range(len(all_data)):
+        formatted_data.append(all_data[i])
+        formatted_data[-1][7] = format_date(formatted_data[-1][7], config['date']['db_date_format'])
+        formatted_data[-1][7] = f"'{formatted_data[-1][7]}'"
+        formatted_data[-1][0] = f"'{formatted_data[-1][0]}'"
+        formatted_data[-1][1] = f"'{formatted_data[-1][1]}'"
+        formatted_data[-1][4] = f"'{formatted_data[-1][4]}'"
+        formatted_data[-1][8] = f"'{formatted_data[-1][8]}'"
+        formatted_data[-1][9] = f"'{formatted_data[-1][9]}'"
+        formatted_data[-1][10] = f"'{formatted_data[-1][10]}'"
+        if formatted_data[-1][3] == '':
+            formatted_data[-1][3] = 0
+        if formatted_data[-1][6] == '':
+            formatted_data[-1][6] = 0
+    return formatted_data
 
 
 def format_data_for_mysql(all_data):
@@ -488,7 +507,7 @@ def format_data_for_mysql(all_data):
 def write_to_csv(filename:str, data:Iterable):
     try:
         with open(filename, mode='w') as employee_file:
-            writer = csv.writer(employee_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            writer = csv.writer(employee_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
             writer.writerows(data)
         loger.info(f'Data was successefully writed to csv file: {filename}')
     except Exception as ex:
@@ -519,7 +538,7 @@ def make_inserts(data):
 def make_insert_string(id, data_row):
     insert = INSERT_BASE + str(id) + ','
     for i in data_row:
-        insert+= str(i) + ','
+        insert += str(i) + ','
     insert = insert[0:-1]
     insert += ');\n'
     return insert
@@ -528,7 +547,7 @@ def make_insert_string(id, data_row):
 def main():
     setup()
     data = get_all_data()
-    write_inserts(config['inserts_file'], format_data_for_mysql(data))
+    write_to_csv(config['csv_file'], format_data_for_csv(data))
 
 
 if __name__ == "__main__":

@@ -1,2 +1,11 @@
 INFO 2021-03-09 14:20:48,335: Generator setuped. < at app, line 43 >
 INFO 2021-03-09 14:20:59,645: Inserts were successfuly writed to file: orders.txt < at app, line 505 >
+INFO 2021-03-09 15:43:36,296: Generator setuped. < at app, line 43 >
+INFO 2021-03-09 15:43:45,415: All data was generated. Total rows: 7040 < at app, line 450 >
+INFO 2021-03-09 15:43:46,299: Data was successefully writed to csv file: orders.csv < at app, line 512 >
+INFO 2021-03-09 15:44:50,671: Generator setuped. < at app, line 43 >
+INFO 2021-03-09 15:45:00,470: All data was generated. Total rows: 7040 < at app, line 450 >
+CRITICAL 2021-03-09 15:45:01,422: Error while writing to CSV: "quotechar" must be a 1-character string < at app, line 515 >
+INFO 2021-03-09 15:45:38,528: Generator setuped. < at app, line 43 >
+INFO 2021-03-09 15:45:47,348: All data was generated. Total rows: 7040 < at app, line 450 >
+INFO 2021-03-09 15:45:48,229: Data was successefully writed to csv file: orders.csv < at app, line 512 >
