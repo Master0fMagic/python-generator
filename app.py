@@ -1,12 +1,10 @@
-import math
 from os import rename
-import string
 from typing import Iterable
-import  config as cfg
+import config as cfg
 import sys
 from constants import *
 from datetime import date, datetime, timedelta
-from math import ceil, floor, sin
+from math import ceil, sin
 import csv
 
 
@@ -20,6 +18,22 @@ def setup():
         print(ex)
         sys.exit(1)
 
+
+def generate_pr_values(blank_sheet, rows_amount, first_value):
+    pr_number = None
+    for i in range(len(blank_sheet)):
+        if i == 0:
+            pr_number = pseudo_random_value(first_value)
+        else:
+            pr_number = pseudo_random_value(blank_sheet[i-1][-1])
+        blank_sheet[i].append(pr_number)
+
+        for j in range(1,rows_amount):
+            pr_number = pseudo_random_value(blank_sheet[i][j-1])
+            blank_sheet[i].append(pr_number)
+    if len(blank_sheet) == 1:
+        return blank_sheet[0] 
+    return blank_sheet
 
 
 def linear_congruent_method(a,c,m, number):
@@ -68,51 +82,15 @@ def generate_id(first_id):
 
 
 def generate_old_dates_pr_numbers():
-    old_dates_pr = [[],[],[]]
-    pr_number = None
-    for i in range(len(old_dates_pr)):
-        if i == 0:
-            pr_number = pseudo_random_value( config['first_values']['old_dates'] )
-        else:
-            pr_number = pseudo_random_value(old_dates_pr[i-1][-1])
-        old_dates_pr[i].append(pr_number)
-
-        for j in range(1,OLD_RECORDS):
-            pr_number = pseudo_random_value(old_dates_pr[i][j-1])
-            old_dates_pr[i].append(pr_number)
-    return old_dates_pr
+    return generate_pr_values([[],[],[]], OLD_RECORDS, config['first_values']['old_dates'])
 
 
 def generate_cur_dates_pr_numbers():
-    cur_dates_pr = [[],[],[],[]]
-    pr_number = None
-    for i in range(len(cur_dates_pr)):
-        if i == 0:
-            pr_number = pseudo_random_value( config['first_values']['current_dates'] )
-        else:
-            pr_number = pseudo_random_value(cur_dates_pr[i-1][-1])
-        cur_dates_pr[i].append(pr_number)
-
-        for j in range(1,CURRENT_RECORDS):
-            pr_number = pseudo_random_value(cur_dates_pr[i][j-1])
-            cur_dates_pr[i].append(pr_number)
-    return cur_dates_pr
+    return generate_pr_values([[],[],[],[]], CURRENT_RECORDS, config['first_values']['current_dates'])
 
 
 def generate_new_dates_pr_numbers():
-    new_dates_pr = [[],[],[]]
-    pr_number = None
-    for i in range(len(new_dates_pr)):
-        if i == 0:
-            pr_number = pseudo_random_value( config['first_values']['new_dates'] )
-        else:
-            pr_number = pseudo_random_value(new_dates_pr[i-1][-1])
-        new_dates_pr[i].append(pr_number)
-
-        for j in range(1,NEW_RECORDS):
-            pr_number = pseudo_random_value(new_dates_pr[i][j-1])
-            new_dates_pr[i].append(pr_number)
-    return new_dates_pr
+    return generate_pr_values([[],[],[]], NEW_RECORDS, config['first_values']['new_dates'])
 
 
 def get_time_increment(dates_pr):
@@ -122,6 +100,7 @@ def get_time_increment(dates_pr):
         for j in range(len(dates_pr[i])):
             time_increments[i].append( (dates_pr[i][j] % config['date']['max_date_increment']) /1000)
     return time_increments
+
 
 def get_time_increment_from_begining(time_increments):
     time_increments_from_begining = [[]]
@@ -198,14 +177,9 @@ def generate_dates():
         dates.append(old_dates[i]+current_dates[i]+new_dates[i])
     return dates
 
+
 def generate_price_pr():
-    price_pr = []
-    current_pr = pseudo_random_value(config['first_values']['px_init'])
-    price_pr.append(current_pr)
-    for i in range(ALL_RECORDS - 1):
-        current_pr = pseudo_random_value(current_pr)
-        price_pr.append(current_pr)
-    return price_pr
+    return generate_pr_values([[]], ALL_RECORDS, config['first_values']['px_init'])
 
 
 def get_instrument_number(price_pr:list):
@@ -235,13 +209,7 @@ def generate_price_increment(price_pr, instrument_numbers):
 
 
 def generate_status_pr():
-    status_pr = []
-    current_pr = pseudo_random_value(config['first_values']['third_status'])
-    status_pr.append(current_pr)
-    for i in range(ALL_RECORDS - 1):
-        current_pr = pseudo_random_value(current_pr)
-        status_pr.append(current_pr)
-    return status_pr
+    return generate_pr_values([[]], ALL_RECORDS, config['first_values']['third_status'])
 
 
 def generate_one_type_status(status_dates, status_number):
@@ -252,7 +220,6 @@ def generate_one_type_status(status_dates, status_number):
         else:
             statuses.append("")
     return statuses
-
 
 
 def generate_3d_status(status_dates):
@@ -316,20 +283,8 @@ def format_price(price, instrument_number):
 
 
 def generate_volume_pr_numbers():
-    volumes_pr = [[],[]]
-    pr_number = None
-    for i in range(len(volumes_pr)):
-        if i == 0:
-            pr_number = pseudo_random_value( config['first_values']['volume'] )
-        else:
-            pr_number = pseudo_random_value(volumes_pr[i-1][-1])
-        volumes_pr[i].append(pr_number)
-
-        for j in range(1,ALL_RECORDS):
-            pr_number = pseudo_random_value(volumes_pr[i][j-1])
-            volumes_pr[i].append(pr_number)
-    return volumes_pr
-
+    return generate_pr_values([[],[]], ALL_RECORDS, config['first_values']['volume'])
+    
 
 def generate_volume_init_lots(volume_init_pr):
     volume_init_lots = list()
@@ -368,6 +323,7 @@ def generate_volumes(statuses):
     volumes.append( generate_side(pr_numbers[1]))
     return volumes
 
+
 def get_volumes(volume_lots):
     volumes = []
     for i in range(len(volume_lots)):
@@ -389,30 +345,20 @@ def get_volume_fill(third_statuses, volume_init, volume_diff):
     return get_volumes(volumes)
 
 
+def generate_notes_pr():
+    return generate_pr_values([[]], ALL_RECORDS, config['first_values']['notes'])
+
+
 def generate_notes():
     notes = []
-    current_pr = pseudo_random_value(config['first_values']['notes'])
-    notes.append(config['notes'][current_pr % config['notes_amount']])
-    for i in range(ALL_RECORDS - 1):
-        current_pr = pseudo_random_value(current_pr)
-        notes.append(config['notes'][current_pr % config['notes_amount']])
+    notes_pr = generate_notes_pr()
+    for i in range(ALL_RECORDS):
+        notes.append(config['notes'][notes_pr[i] % config['notes_amount']])
     return notes
 
 
 def generate_tags_pr():
-    tags_pr = [[] for i in range(config['tags_amount'])]
-    pr_number = None
-    for i in range(len(tags_pr)):
-        if i == 0:
-            pr_number = pseudo_random_value( config['first_values']['tags'] )
-        else:
-            pr_number = pseudo_random_value(tags_pr[i-1][-1])
-        tags_pr[i].append(pr_number)
-
-        for j in range(1,ALL_RECORDS):
-            pr_number = pseudo_random_value(tags_pr[i][j-1])
-            tags_pr[i].append(pr_number)
-    return tags_pr
+    return generate_pr_values([[] for i in range(config['tags_amount'])], ALL_RECORDS, config['first_values']['tags'])
 
 
 def generate_tags():
@@ -528,7 +474,7 @@ def write_inserts(filename, data):
         with open(filename, 'w') as file:
             file.writelines(data)
     except Exception as ex:
-        print(f'Error while writing inserts to file: {ex}')
+        print(f'Error while writing to file: {ex}')
         sys.exit(1)
 
 
@@ -551,7 +497,7 @@ def make_insert_string(id, data_row):
 def main():
     setup()
     data = get_all_data()
-    write_inserts('order.txt', format_data_for_mysql(data))
+    write_inserts('order1.txt', format_data_for_mysql(data))
 
 
 if __name__ == "__main__":
