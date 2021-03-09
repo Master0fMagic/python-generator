@@ -1,21 +1,48 @@
-from os import rename
+import os
 from typing import Iterable
 import config as cfg
 import sys
 from constants import *
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from math import ceil, sin
 import csv
+import logging
 
 
 config = None
+loger = logging.getLogger()
+
+
+def create_logs_directory(path):
+    dir_path = os.path.dirname(path)
+    os.mkdir(dir_path)
+
+
+def loger_setup():
+    try:
+        if not os.path.exists(config['logging']['log_path']):
+            create_logs_directory(config['logging']['log_path'])
+        
+        handler = logging.FileHandler(filename=config['logging']['log_path'], mode='a')
+        handler.setLevel(logging.getLevelName(config['logging']['level']))
+        formatter = logging.Formatter(config['logging']['format'])
+        
+        loger.setLevel(logging.getLevelName(config['logging']['level']))
+        handler.setFormatter(formatter)
+        loger.addHandler(handler)
+    except Exception as ex:
+        print(f'Error while setuping logger: {ex}')
+        sys.exit(1)
+
 
 def setup():
     global config
     try:
         config = cfg.Config('config.cfg')
+        loger_setup()
+        loger.info("Generator setuped.")
     except Exception as ex:
-        print(ex)
+        print(f'Error while setuping: {ex}')
         sys.exit(1)
 
 
@@ -420,6 +447,7 @@ def get_all_data():
     for row_data in data:
         all_data += get_all_statuses_data(row_data)
     all_data = sorted(all_data, key= lambda data: data[7])
+    loger.info(f'All data was generated. Total rows: {len(all_data)}')
     return all_data
 
 
@@ -462,9 +490,10 @@ def write_to_csv(filename:str, data:Iterable):
         with open(filename, mode='w') as employee_file:
             writer = csv.writer(employee_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             writer.writerows(data)
-            
+        loger.info(f'Data was successefully writed to csv file: {filename}')
     except Exception as ex:
         print(f'Error while writing to CSV: {ex}')
+        loger.critical(f'Error while writing to CSV: {ex}')
         sys.exit(1)
 
 
@@ -473,8 +502,10 @@ def write_inserts(filename, data):
     try:
         with open(filename, 'w') as file:
             file.writelines(data)
+        loger.info(f'Inserts were successfuly writed to file: {filename}')
     except Exception as ex:
         print(f'Error while writing to file: {ex}')
+        loger.critical(f'Error while writing to file: {ex}')
         sys.exit(1)
 
 
@@ -497,7 +528,7 @@ def make_insert_string(id, data_row):
 def main():
     setup()
     data = get_all_data()
-    write_inserts('order1.txt', format_data_for_mysql(data))
+    write_inserts(config['inserts_file'], format_data_for_mysql(data))
 
 
 if __name__ == "__main__":
