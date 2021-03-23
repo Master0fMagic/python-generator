@@ -1,0 +1,11 @@
+# created by virtualenv automatically
+__pycache__
+__pycache__/*
+logs
+logs/*
+Scripts
+Scripts/*
+Lib
+Lib/*
+pyvenv.cfg
+test.py
