@@ -1,5 +1,6 @@
 from service_classes import Config
 from dto import *
+from id_hex_mapper import IdHexMapper
 
 class OrderAssetToOrderHistoryMapper:
     def __init__(self) -> None:
@@ -12,12 +13,16 @@ class OrderAssetToOrderHistoryMapper:
                 if record.date[i] is None:
                     continue
                 mapped_data.append(self.order_asset_to_order_record(record,i))
-        return mapped_data
+        return OrderHistoryCollection(mapped_data)
 
     def order_asset_to_order_record(self, asset:OrderAssetDTO, date_index:int) -> OrderHistoryRecord:
         record = OrderHistoryRecord()
         if asset.status[date_index] in ('New', 'InProgress') or 'Cancel' in asset.status:
             record.px_fill = record.volume_fill = 0
+        else:
+            record.px_fill = asset.px_fill
+            record.volume_fill = asset.volume_fill
+
         record.id = asset.id
         record.px_init = asset.px_init
         record.volume_init = asset.volume_init
@@ -35,12 +40,13 @@ class OrderHistoryToDataBaseDTOMapper:
     def __init__(self) -> None:
         self.__config = Config()
 
+    
+
     def order_history_to_DB_DTO(self, order_history:OrderHistoryCollection) -> Iterable[DataBaseOrderDTO]:
         mapped_data = []
         for record in order_history.order_collection:
             mapped_record = DataBaseOrderDTO()
-            hex_id = hex(record.id)
-            mapped_record.id = '0'*(10-len(hex_id)) + hex_id
+            mapped_record.id = IdHexMapper.id_to_hex_string(record.id)
             mapped_record.px_fill = record.px_fill
             mapped_record.px_init = record.px_init
             mapped_record.volume_fill = record.volume_fill
@@ -59,7 +65,7 @@ class OrderHistoryToDataBaseDTOMapper:
         mapped_data = []
         for record in order_history:
             mapped_record = OrderHistoryRecord()
-            mapped_record.id = int(record.id, 16)
+            mapped_record.id = IdHexMapper.hex_id_to_int(record.id)
             mapped_record.px_fill = record.px_fill
             mapped_record.px_init = record.px_init
             mapped_record.volume_fill = record.volume_fill
@@ -69,7 +75,10 @@ class OrderHistoryToDataBaseDTOMapper:
             mapped_record.tag = record.tag
             mapped_record.side = record.side
             mapped_record.instrument = record.instrument
-            mapped_record.date = datetime.strptime(record.date, self.__config['date']['db_date_format'])
+            if isinstance(record.date, datetime):
+                mapped_record.date = record.date
+            else:
+                mapped_record.date = datetime.strptime(record.date, self.__config['date']['db_date_format'])
             mapped_data.append(mapped_record)
         return  OrderHistoryCollection(mapped_data)
 

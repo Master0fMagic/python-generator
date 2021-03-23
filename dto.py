@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Iterable
+from id_hex_mapper import IdHexMapper
 
 class OrderHistoryRecord:
     id:int = None
@@ -13,6 +14,13 @@ class OrderHistoryRecord:
     tag:str = None
     side:str = None
     instrument:str = None
+
+    @property
+    def hex_id(self) -> str:
+        return IdHexMapper.id_to_hex_string(self.id)
+
+    def __str__(self) -> str:
+        return f'ID: {self.id}, HEX_ID: {self.hex_id}, PX_FILL: {self.px_fill}, PX_INIT: {self.px_init}, VOLUME_INIT: {self.volume_init}, VOLUME_FILL: {self.volume_fill}, STATUS: {self.status}, DATE: {self.date}, SIDE: {self.side}, INSTRUMENT: {self.instrument}, NOTE: {self.note}, TAG: {self.tag}'
 
 class OrderHistoryCollection:
     _order_collection:Iterable[OrderHistoryRecord] = None

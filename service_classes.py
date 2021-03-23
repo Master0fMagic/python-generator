@@ -3,9 +3,35 @@ import config
 import logging
 import os
 import sys
+import mysql.connector
+from mysql.connector import errorcode
 
 class DBService:
-    pass
+    __connection = None
+    
+    def __new__(cls) -> Any:
+        if cls.__connection is None:
+            try:
+                cls.__connection = mysql.connector.connect(user='root', password='root',
+                                    host='127.0.0.1',
+                                    database='generator')
+            except mysql.connector.Error as err:
+                if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+                    print("Something is wrong with your user name or password")
+                elif err.errno == errorcode.ER_BAD_DB_ERROR:
+                    print("Database does not exist")
+                else:
+                    print(err)
+                sys.exit(1)
+        return cls.__connection
+
+
+    def __del__(self):
+        try:
+            self.__connection.close()
+            self.__connection = None
+        except Exception as e:
+            raise e
 
 class Config:
     __config_file = 'config.cfg'
