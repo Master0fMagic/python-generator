@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from typing import Iterable
-from service_classes import Config, DBService
+from service_classes import Config, DBService, Logger
 from dto import DataBaseOrderDTO, OrderHistoryCollection
 from data_mappers import OrderHistoryToDataBaseDTOMapper
 from id_hex_mapper import IdHexMapper
@@ -24,6 +24,7 @@ class MySQLRepository(IRepository):
     def __init__(self) -> None:
         self.__config = Config()
         self.__mapper = OrderHistoryToDataBaseDTOMapper()
+        self.__logger = Logger()
     
     def save_to_database(self, orders: OrderHistoryCollection) -> None:
         orders_dto_collection = self.__mapper.order_history_to_DB_DTO(orders)
@@ -50,11 +51,18 @@ class MySQLRepository(IRepository):
                 connection.commit()
                 query = self.__config['insert_query_template']
         cursor.close()
+        self.__logger.info(f'Saved to database {len(orders.order_collection)} order history records')
+
 
     def _get_response(self, query:str) -> Iterable[DataBaseOrderDTO]:
         response = []
-        cursor = DBService().cursor()
-        cursor.execute(query)
+        cursor = None
+        try:
+            cursor = DBService().cursor()
+            cursor.execute(query)
+        except Exception as ex:
+            self.__logger.error(f'Error while executing query: {ex}')
+        
         for item in cursor:
             order_record = DataBaseOrderDTO()
             order_record.id = item[1]
@@ -74,8 +82,12 @@ class MySQLRepository(IRepository):
 
     def find_by_id(self, id: int) -> OrderHistoryCollection:
         query = "SELECT * FROM orders_history WHERE OrderNumber = '{}'".format(IdHexMapper.id_to_hex_string(id))
-        return self.__mapper.DB_DTO_to_order_history(self._get_response(query))
+        response = self._get_response(query)
+        self.__logger.info(f'Get order history records by id: [{len(response)}] rows')
+        return self.__mapper.DB_DTO_to_order_history(response)
     
     def get_all(self) -> OrderHistoryCollection:
         query = "SELECT * FROM orders_history;"
-        return self.__mapper.DB_DTO_to_order_history(self._get_response(query))
+        response = self._get_response(query)
+        self.__logger.info(f'Get order history records: [{len(response)}] rows')
+        return self.__mapper.DB_DTO_to_order_history(response)

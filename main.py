@@ -1,5 +1,5 @@
 from dto import OrderHistoryCollection
-from service_classes import Config, DBService
+from service_classes import Config, DBService, Logger
 from factory import ConcreteBuilder, ConcreteFactory, IFactory
 from repository import IRepository, MySQLRepository
 
@@ -21,11 +21,27 @@ class Client(IRepository):
         return self.__repository.get_all()
 
 
+class Programm:
+    __config = None
+    __loger = None
+        
+    @staticmethod
+    def main():
+        Programm.setup()
+        client = Client(MySQLRepository())
+        #data = client.generate_collection(ConcreteFactory(builder=ConcreteBuilder()), Programm.__config['ALL_RECORDS'] )
+        data = client.find_by_id(68773968890)
+        for record in data.order_collection:
+            print(record)
+    
+    
+    @staticmethod
+    def setup():
+        Programm.__config = Config()
+        Programm.__loger = Logger()
+
+
+
 if __name__ == '__main__':
-    my_config = Config()
-    client = Client(MySQLRepository())
-    #data = client.generate_collection(ConcreteFactory(builder=ConcreteBuilder()), my_config['ALL_RECORDS'] )
-    data = client.find_by_id(68773968890)
-    for record in data.order_collection:
-        print(record)
+    Programm.main()
     

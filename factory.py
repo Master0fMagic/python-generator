@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from data_mappers import OrderAssetToOrderHistoryMapper
-from service_classes import Config
+from service_classes import Config, Logger
 from generators import *
 from typing import Iterable
 from dto import OrderAssetDTO, OrderHistoryCollection
@@ -99,6 +99,7 @@ class ConcreteBuilder(IBuilder):
 class ConcreteFactory(IFactory):
     def __init__(self, builder:IBuilder) -> None:
         self.__builder = builder
+        self.__logger = Logger()
     
     def generate_order_history(self, amount:int) -> OrderHistoryCollection:
         self.__builder.reset()
@@ -112,5 +113,8 @@ class ConcreteFactory(IFactory):
         self.__builder.build_notes()
 
         mapper = OrderAssetToOrderHistoryMapper()
+        
+        self.__logger.info(f'Data generated [{len(self.__builder.get_result())} order assets]')
+
         return mapper.order_assets_to_order_history(self.__builder.get_result())
 

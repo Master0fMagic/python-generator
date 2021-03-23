@@ -17,13 +17,17 @@ class DBService:
                                     database='generator')
             except mysql.connector.Error as err:
                 if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                    print("Something is wrong with your user name or password")
+                    print(f"Something is wrong with your user name or password: {err}")
                 elif err.errno == errorcode.ER_BAD_DB_ERROR:
-                    print("Database does not exist")
+                    print(f"Database does not exist: {err}")
                 else:
-                    print(err)
+                    print(f"Error while connecting to database: {err}")
                 sys.exit(1)
         return cls.__connection
+    
+    def __init__(self) -> None:
+        self.__loger = Logger()
+        self.__loger.info("Connected to database")
 
 
     def __del__(self):
@@ -43,7 +47,7 @@ class Config:
                 cls.__config_data = config.Config(cls.__config_file)
             return cls.__config_data
         except Exception as ex:
-            raise ex
+            print('Error while setting config: {ex}')
 
 class Logger:
     __loger = None
@@ -55,7 +59,7 @@ class Logger:
                 cls.__setup_logger(cls)
             return cls.__loger
         except Exception as ex:
-            raise ex
+            print('Error while setuping logger: {ex}')
     
     @staticmethod
     def __setup_logger(cls) -> None:
@@ -73,7 +77,7 @@ class Logger:
             handler.setFormatter(formatter)
             cls.__loger.addHandler(handler)
         except Exception as ex:
-            raise ex
+            print(f'Error while setuping logger: {ex}')
 
 class PseudoRandom:
     __A=1366
