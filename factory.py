@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from data_mappers import OrderAssetToOrderHistoryMapper
-from service_classes import Config, Logger
+from logger import Logger
 from generators import *
 from typing import Iterable
 from dto import OrderAssetDTO, OrderHistoryCollection
@@ -9,10 +8,6 @@ from dto import OrderAssetDTO, OrderHistoryCollection
 class IBuilder(metaclass=ABCMeta):
     
     @abstractmethod
-    def init(self, amount:int) -> None:
-        pass
-
-    @abstractmethod
     def reset(self) -> None:
         pass
 
@@ -29,11 +24,23 @@ class IBuilder(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def build_price_instruments(self) -> None:
+    def build_price_init_instruments(self) -> None:
         pass
 
     @abstractmethod
-    def build_volumes_side(self) -> None:
+    def build_price_fill(self) -> None:
+        pass
+
+    @abstractmethod
+    def build_volume_init(self) -> None:
+        pass
+
+    @abstractmethod
+    def build_volume_fill(self) -> None:
+        pass
+
+    @abstractmethod
+    def build_side(self) -> None:
         pass
 
     @abstractmethod
@@ -45,55 +52,169 @@ class IBuilder(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_result(self) -> Iterable[OrderAssetDTO]:
+    def get_result(self) -> OrderAssetDTO:
         pass
+
 
 class IFactory(metaclass=ABCMeta):
     @abstractmethod
-    def generate_order_history(self, amount:int, builder:IBuilder) -> OrderHistoryCollection:
+    def generate_order_asset(self) -> OrderAssetDTO:
         pass
 
-class ConcreteBuilder(IBuilder):
-       
+
+class OldRecordsBuilder(IBuilder):
     def __init__(self) -> None:
-        self.__config = Config()
+        self.__orderAsset = OrderAssetDTO() 
 
     def reset(self) -> None:
-        self.__orders = None
-    
-    def init(self, amount:int) -> None:
-        self.__orders = [OrderAssetDTO() for i in range(amount)]
+        self.__orderAsset = None      
         
-    def get_result(self) -> Iterable[OrderAssetDTO]:
-        return self.__orders
+    def get_result(self) -> OrderAssetDTO:
+        return self.__orderAsset
     
     def build_dates(self) -> None:
-        generator = AllDatesGenerator(self.__config['OLD_RECORDS'], self.__config['CURRENT_RECORDS'], self.__config['NEW_RECORDS'], self.__orders)
-        self.__orders = generator.generate_data()
+        generator = OldDatesGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
 
     def build_id(self) -> None:
-        generator = IDGenerator(len(self.__orders), self.__orders)
-        self.__orders = generator.generate_data()
+        generator = IDGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
 
     def build_statuses(self) -> None:
-        generator = StatusGenerator(len(self.__orders), self.__orders)
-        self.__orders = generator.generate_data()
-
-    def build_price_instruments(self) -> None:
-        generator = PriceInstrumentGenerator(len(self.__orders), self.__orders)
-        self.__orders = generator.generate_data()
-
-    def build_volumes_side(self) -> None:
-        generator = VolumeSideGenerator(len(self.__orders), self.__orders)
-        self.__orders = generator.generate_data()
-
-    def build_tags(self) -> None:
-        generator = TagGenerator(len(self.__orders), self.__orders)
-        self.__orders = generator.generate_data()
+        generator = StatusGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
 
     def build_notes(self) -> None:
-        generator = NoteGenerator(len(self.__orders), self.__orders)
-        self.__orders = generator.generate_data()
+        generator = NoteGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_price_init_instruments(self) -> None:
+        generator = PriceInitInstrumentGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_volume_init(self) -> None:
+        generator = VolumeInitGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_price_fill(self) -> None:
+        generator = PriceFillGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_volume_fill(self) -> None:
+        generator = VolumeFillGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_side(self) -> None:
+        generator = SideGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_tags(self) -> None:
+        generator = TagGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+
+class CurrentRecordsBuilder(IBuilder):
+       
+    def __init__(self) -> None:
+        self.__orderAsset = OrderAssetDTO() 
+
+    def reset(self) -> None:
+        self.__orderAsset = None
+        
+    def get_result(self) -> OrderAssetDTO:
+        return self.__orderAsset
+    
+    def build_dates(self) -> None:
+        generator = CurrentDatesGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_id(self) -> None:
+        generator = IDGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_statuses(self) -> None:
+        generator = StatusGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_notes(self) -> None:
+        generator = NoteGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_price_init_instruments(self) -> None:
+        generator = PriceInitInstrumentGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_volume_init(self) -> None:
+        generator = VolumeInitGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_price_fill(self) -> None:
+        generator = PriceFillGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_volume_fill(self) -> None:
+        generator = VolumeFillGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_side(self) -> None:
+        generator = SideGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_tags(self) -> None:
+        generator = TagGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+        
+
+class NewRecordsBuilder(IBuilder):
+       
+    def __init__(self) -> None:
+        self.__orderAsset = OrderAssetDTO()
+
+    def reset(self) -> None:
+        self.__orderAsset = None         
+        
+    def get_result(self) -> OrderAssetDTO:
+        return self.__orderAsset
+    
+    def build_dates(self) -> None:
+        generator = NewDatesGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_id(self) -> None:
+        generator = IDGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_statuses(self) -> None:
+        generator = StatusGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_notes(self) -> None:
+        generator = NoteGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_price_init_instruments(self) -> None:
+        generator = PriceInitInstrumentGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_volume_init(self) -> None:
+        generator = VolumeInitGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_price_fill(self) -> None:
+        generator = PriceFillGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_volume_fill(self) -> None:
+        generator = VolumeFillGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_side(self) -> None:
+        generator = SideGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
+
+    def build_tags(self) -> None:
+        generator = TagGenerator(self.__orderAsset)
+        self.__orderAsset = generator.generate_data()
         
 
 class ConcreteFactory(IFactory):
@@ -101,20 +222,18 @@ class ConcreteFactory(IFactory):
         self.__builder = builder
         self.__logger = Logger()
     
-    def generate_order_history(self, amount:int) -> OrderHistoryCollection:
+    def generate_order_asset(self) -> OrderAssetDTO:
         self.__builder.reset()
-        self.__builder.init(amount)
         self.__builder.build_id()
         self.__builder.build_dates()
         self.__builder.build_statuses()
-        self.__builder.build_price_instruments()
-        self.__builder.build_volumes_side()
+        self.__builder.build_price_init_instruments()
+        self.__builder.build_price_fill()
+        self.__builder.build_volume_init()
+        self.__builder.build_volume_fill()
+        self.__builder.build_side()
         self.__builder.build_tags()
         self.__builder.build_notes()
-
-        mapper = OrderAssetToOrderHistoryMapper()
-        
-        self.__logger.info(f'Data generated [{len(self.__builder.get_result())} order assets]')
-
-        return mapper.order_assets_to_order_history(self.__builder.get_result())
+        #self.__logger.info(f'Order genereted')
+        return self.__builder.get_result()
 

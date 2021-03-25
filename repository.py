@@ -1,6 +1,8 @@
 from abc import ABCMeta, abstractmethod
 from typing import Iterable
-from service_classes import Config, DBService, Logger
+from my_config import Config
+from db_connection import DBService
+from logger import Logger
 from dto import DataBaseOrderDTO, OrderHistoryCollection
 from data_mappers import OrderHistoryToDataBaseDTOMapper
 from id_hex_mapper import IdHexMapper

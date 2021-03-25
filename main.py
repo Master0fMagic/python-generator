@@ -1,15 +1,17 @@
 from dto import OrderHistoryCollection
-from service_classes import Config, DBService, Logger
-from factory import ConcreteBuilder, ConcreteFactory, IFactory
+from my_config import Config
+from db_connection import DBService
+from logger import Logger
 from repository import IRepository, MySQLRepository
+from order_history_creator import OrderHistoryCreator
 
 class Client(IRepository):
     def __init__(self, repo:IRepository) -> None:
         self.__repository = repo
 
-    def generate_collection(self, factory:IFactory, amount:int) -> OrderHistoryCollection:
-        data = factory.generate_order_history(amount)
-        return data
+    def generate_collection(self, old_records_amount:int, cur_records_amount:int, new_records_amount:int) -> OrderHistoryCollection:
+        creator = OrderHistoryCreator()
+        return creator.generate_order_history(old_records_amount, cur_records_amount, new_records_amount) 
 
     def save_to_database(self, orders:OrderHistoryCollection) -> None:
         self.__repository.save_to_database(orders)
@@ -29,8 +31,7 @@ class Programm:
     def main():
         Programm.setup()
         client = Client(MySQLRepository())
-        #data = client.generate_collection(ConcreteFactory(builder=ConcreteBuilder()), Programm.__config['ALL_RECORDS'] )
-        data = client.find_by_id(68773968890)
+        data = client.generate_collection(Programm.__config['OLD_RECORDS'], Programm.__config['CURRENT_RECORDS'], Programm.__config['NEW_RECORDS'] )
         for record in data.order_collection:
             print(record)
     

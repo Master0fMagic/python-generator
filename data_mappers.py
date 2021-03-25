@@ -1,38 +1,44 @@
-from service_classes import Config
+from my_config import Config
 from dto import *
 from id_hex_mapper import IdHexMapper
 
-class OrderAssetToOrderHistoryMapper:
-    def __init__(self) -> None:
-        self.__config = Config()
+class OrderAssetToOrderHistoryTransporter:
 
     def order_assets_to_order_history(self, order_list:Iterable[OrderAssetDTO]) -> OrderHistoryCollection:
-        mapped_data = []
+        order_history_records = []
         for record in order_list:
-            for i in range(len(record.date)): 
-                if record.date[i] is None:
-                    continue
-                mapped_data.append(self.order_asset_to_order_record(record,i))
-        return OrderHistoryCollection(mapped_data)
+            order_history_records += self.order_asset_to_order_record(record)
+        return OrderHistoryCollection(order_history_records)
 
-    def order_asset_to_order_record(self, asset:OrderAssetDTO, date_index:int) -> OrderHistoryRecord:
-        record = OrderHistoryRecord()
-        if asset.status[date_index] in ('New', 'InProgress') or 'Cancel' in asset.status:
-            record.px_fill = record.volume_fill = 0
-        else:
-            record.px_fill = asset.px_fill
-            record.volume_fill = asset.volume_fill
+    def order_asset_to_order_record(self, asset:OrderAssetDTO) -> Iterable[OrderHistoryRecord]:
+        order_history_records = []
+        
+        for i in range(4):
+            record = OrderHistoryRecord()
+            if len(asset.date) == 0:
+                record.date = None
+            elif asset.date[i] is None:
+                continue
+            else:
+                record.date = asset.date[i]
 
-        record.id = asset.id
-        record.px_init = asset.px_init
-        record.volume_init = asset.volume_init
-        record.status = asset.status[date_index]
-        record.date = asset.date[date_index]
-        record.note = asset.note
-        record.tag = asset.tag
-        record.side = asset.side
-        record.instrument = asset.instrument
-        return record
+            if asset.status[i] in ('New', 'InProgress') or 'Cancel' in asset.status:
+                record.px_fill = record.volume_fill = 0
+            else:
+                record.px_fill = asset.px_fill
+                record.volume_fill = asset.volume_fill
+
+            record.id = asset.id
+            record.px_init = asset.px_init
+            record.volume_init = asset.volume_init
+            record.status = asset.status[i]
+            
+            record.note = asset.note
+            record.tag = asset.tag
+            record.side = asset.side
+            record.instrument = asset.instrument
+            order_history_records.append(record)
+        return order_history_records
             
 
 class OrderHistoryToDataBaseDTOMapper:
@@ -40,7 +46,6 @@ class OrderHistoryToDataBaseDTOMapper:
     def __init__(self) -> None:
         self.__config = Config()
 
-    
 
     def order_history_to_DB_DTO(self, order_history:OrderHistoryCollection) -> Iterable[DataBaseOrderDTO]:
         mapped_data = []
