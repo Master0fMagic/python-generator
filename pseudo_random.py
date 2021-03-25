@@ -40,3 +40,10 @@ class PseudoRandom:
             number = PseudoRandom.get_random(number)
         return number
 
+    @staticmethod 
+    def get_random_list_from_list(numbers:Iterable[int]) -> Iterable[int]:
+        result = []
+        for number in numbers:
+            result.append(PseudoRandom.get_random(number))
+        return result
+

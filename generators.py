@@ -22,7 +22,7 @@ class TagGenerator(IGenerator):
             self._step = self.__config['ALL_RECORDS']
             
             if TagGenerator._last_random is None:
-                TagGenerator._last_random = self.__config['first_values']['tags']
+                TagGenerator._last_random = [self.__config['first_values']['tags']]
             
             if orderAsset is None:
                 self._orderAsset = OrderAssetDTO()
@@ -30,8 +30,12 @@ class TagGenerator(IGenerator):
                 self._orderAsset = orderAsset
 
     def generate_data(self) -> OrderAssetDTO:
-        random_numbers = PseudoRandom.get_random_list(TagGenerator._last_random, self._random_amount, self._step)
-        TagGenerator._last_random = random_numbers[0]
+        random_numbers = []
+        if len(TagGenerator._last_random) == 1:
+            random_numbers = PseudoRandom.get_random_list(TagGenerator._last_random[0], self._random_amount, self._step)
+        else:
+            random_numbers = PseudoRandom.get_random_list_from_list(TagGenerator._last_random)
+        TagGenerator._last_random = random_numbers
 
         row_tags = ''
         for j in range(len(random_numbers)):
@@ -239,7 +243,7 @@ class OldDatesGenerator(IGenerator):
 
             
             if OldDatesGenerator._last_random is None:
-                OldDatesGenerator._last_random = self.__config['first_values']['old_dates']
+                OldDatesGenerator._last_random = [self.__config['first_values']['old_dates']]
             
             if orderAsset is None:
                 self._orderAsset = OrderAssetDTO()
@@ -247,8 +251,12 @@ class OldDatesGenerator(IGenerator):
                 self._orderAsset = orderAsset
 
     def generate_data(self) -> OrderAssetDTO:
-        random_numbers = PseudoRandom.get_random_list(OldDatesGenerator._last_random, self._random_amount, self._step)
-        OldDatesGenerator._last_random = random_numbers[0]
+        random_numbers = []
+        if len(OldDatesGenerator._last_random) == 1:
+            random_numbers = PseudoRandom.get_random_list(OldDatesGenerator._last_random[0], self._random_amount, self._step)
+        else:
+            random_numbers = PseudoRandom.get_random_list_from_list(OldDatesGenerator._last_random)
+        OldDatesGenerator._last_random = random_numbers
 
         time_increment =  (random_numbers[0] % self.__config['date']['max_date_increment']) / 1000
         OldDatesGenerator._last_time_increment = time_increment = time_increment + OldDatesGenerator._last_time_increment
@@ -280,7 +288,7 @@ class CurrentDatesGenerator(IGenerator):
 
             
             if CurrentDatesGenerator._last_random is None:
-                CurrentDatesGenerator._last_random = self.__config['first_values']['current_dates']
+                CurrentDatesGenerator._last_random = [self.__config['first_values']['current_dates']]
             
             if orderAsset is None:
                 self._orderAsset = OrderAssetDTO()
@@ -288,8 +296,12 @@ class CurrentDatesGenerator(IGenerator):
                 self._orderAsset = orderAsset
 
     def generate_data(self) -> OrderAssetDTO:
-        random_numbers = PseudoRandom.get_random_list(CurrentDatesGenerator._last_random, self._random_amount, self._step)
-        CurrentDatesGenerator._last_random = random_numbers[0]
+        random_numbers = []
+        if len(CurrentDatesGenerator._last_random) == 1:
+            random_numbers = PseudoRandom.get_random_list(CurrentDatesGenerator._last_random[0], self._random_amount, self._step)
+        else:
+            random_numbers = PseudoRandom.get_random_list_from_list(CurrentDatesGenerator._last_random)
+        CurrentDatesGenerator._last_random = random_numbers
 
         time_increment =  (random_numbers[0] % self.__config['date']['max_date_increment']) / 1000
         CurrentDatesGenerator._last_time_increment = time_increment = time_increment + CurrentDatesGenerator._last_time_increment
@@ -315,7 +327,7 @@ class NewDatesGenerator(IGenerator):
 
             
             if NewDatesGenerator._last_random is None:
-                NewDatesGenerator._last_random = self.__config['first_values']['new_dates']
+                NewDatesGenerator._last_random = [self.__config['first_values']['new_dates']]
             
             if orderAsset is None:
                 self._orderAsset = OrderAssetDTO()
@@ -323,8 +335,12 @@ class NewDatesGenerator(IGenerator):
                 self._orderAsset = orderAsset
 
     def generate_data(self) -> OrderAssetDTO:
-        random_numbers = PseudoRandom.get_random_list(NewDatesGenerator._last_random, self._random_amount, self._step)
-        NewDatesGenerator._last_random = random_numbers[0]
+        random_numbers = []
+        if len(NewDatesGenerator._last_random) == 1:
+            random_numbers = PseudoRandom.get_random_list(NewDatesGenerator._last_random[0], self._random_amount, self._step)
+        else:
+            random_numbers = PseudoRandom.get_random_list_from_list(NewDatesGenerator._last_random)
+        NewDatesGenerator._last_random = random_numbers
 
         time_increment =  (random_numbers[0] % self.__config['date']['max_date_increment']) / 1000
         NewDatesGenerator._last_time_increment = time_increment = time_increment + NewDatesGenerator._last_time_increment
