@@ -14,10 +14,13 @@ class IGenerator(metaclass = ABCMeta):
     def generate_data(self) -> OrderAssetDTO:
         pass
 
+    def set_asset(self, orderAsset:OrderAssetDTO):
+        self._orderAsset = orderAsset
+
 
 class TagGenerator(IGenerator):
-    def __init__(self, orderAsset:OrderAssetDTO = None) -> None:
-            self.__config = Config()
+    def __init__(self, config,orderAsset:OrderAssetDTO = None) -> None:
+            self.__config = config
             self._random_amount = len(self.__config['tags'])
             self._step = self.__config['ALL_RECORDS']
             
@@ -46,8 +49,8 @@ class TagGenerator(IGenerator):
     
 
 class PriceInitInstrumentGenerator(IGenerator):
-    def __init__(self, orderAsset:OrderAssetDTO = None) -> None:
-            self.__config = Config()
+    def __init__(self, config,orderAsset:OrderAssetDTO = None) -> None:
+            self.__config = config
             
             if PriceInitInstrumentGenerator._last_random is None:
                 PriceInitInstrumentGenerator._last_random = self.__config['first_values']['price']
@@ -71,8 +74,8 @@ class PriceInitInstrumentGenerator(IGenerator):
 
 
 class PriceFillGenerator(IGenerator):
-    def __init__(self, orderAsset:OrderAssetDTO = None) -> None:
-            self.__config = Config()
+    def __init__(self, config, orderAsset:OrderAssetDTO = None) -> None:
+            self.__config = config
             
             if PriceFillGenerator._last_random is None:
                 PriceFillGenerator._last_random = self.__config['first_values']['price']
@@ -107,8 +110,8 @@ class PriceFillGenerator(IGenerator):
 
 
 class NoteGenerator(IGenerator):
-    def __init__(self, orderAsset:OrderAssetDTO = None) -> None:
-            self.__config = Config()
+    def __init__(self, config, orderAsset:OrderAssetDTO = None) -> None:
+            self.__config = config
             
             if NoteGenerator._last_random is None:
                 NoteGenerator._last_random = self.__config['first_values']['notes']
@@ -125,8 +128,8 @@ class NoteGenerator(IGenerator):
 
 
 class VolumeInitGenerator(IGenerator):
-    def __init__(self, orderAsset:OrderAssetDTO = None) -> None:
-            self.__config = Config()
+    def __init__(self, config,orderAsset:OrderAssetDTO = None) -> None:
+            self.__config = config
             
             if VolumeInitGenerator._last_random is None:
                 VolumeInitGenerator._last_random = self.__config['first_values']['volume']
@@ -153,8 +156,8 @@ class VolumeInitGenerator(IGenerator):
 
 
 class VolumeFillGenerator(IGenerator):
-    def __init__(self, orderAsset:OrderAssetDTO = None) -> None:
-            self.__config = Config()
+    def __init__(self, config, orderAsset:OrderAssetDTO = None) -> None:
+            self.__config = config
             
             if VolumeFillGenerator._last_random is None:
                 VolumeFillGenerator._last_random = PseudoRandom.get_random_with_step(self.__config['first_values']['volume'], self.__config['ALL_RECORDS'])
@@ -190,8 +193,8 @@ class VolumeFillGenerator(IGenerator):
 
 
 class SideGenerator(IGenerator):
-    def __init__(self, orderAsset:OrderAssetDTO = None) -> None:
-        self.__config = Config()
+    def __init__(self, config, orderAsset:OrderAssetDTO = None) -> None:
+        self.__config =config
         
         if SideGenerator._last_random is None:
             SideGenerator._last_random = PseudoRandom.get_random_with_step(self.__config['first_values']['volume'], self.__config['ALL_RECORDS'])
@@ -210,8 +213,8 @@ class SideGenerator(IGenerator):
 class IDGenerator(IGenerator):
     _last_id = None
 
-    def __init__(self, orderAsset:OrderAssetDTO = None) -> None:
-        self.__config = Config()
+    def __init__(self, config, orderAsset:OrderAssetDTO = None) -> None:
+        self.__config = config
         
         if IDGenerator._last_random is None:
             IDGenerator._last_random = self.__config['first_values']['id']
@@ -235,8 +238,8 @@ class IDGenerator(IGenerator):
 
 class OldDatesGenerator(IGenerator):
     _last_time_increment =  0
-    def __init__(self, orderAsset:OrderAssetDTO = None) -> None:
-            self.__config = Config()
+    def __init__(self, config, orderAsset:OrderAssetDTO = None) -> None:
+            self.__config = config
             self._random_amount = 3
             self._step = self.__config['OLD_RECORDS']
             self._first_date = datetime.strptime(self.__config['date']['first_date'], self.__config['date']['config_date_format'])
@@ -280,8 +283,8 @@ class OldDatesGenerator(IGenerator):
 
 class CurrentDatesGenerator(IGenerator):
     _last_time_increment =  0
-    def __init__(self, orderAsset:OrderAssetDTO = None) -> None:
-            self.__config = Config()
+    def __init__(self, config, orderAsset:OrderAssetDTO = None) -> None:
+            self.__config = config
             self._random_amount = 4
             self._step = self.__config['CURRENT_RECORDS']
             self._first_date = datetime.strptime(self.__config['date']['first_date'], self.__config['date']['config_date_format'])
@@ -319,8 +322,8 @@ class CurrentDatesGenerator(IGenerator):
 
 class NewDatesGenerator(IGenerator):
     _last_time_increment =  0
-    def __init__(self, orderAsset:OrderAssetDTO = None) -> None:
-            self.__config = Config()
+    def __init__(self, config, orderAsset:OrderAssetDTO = None) -> None:
+            self.__config = config
             self._random_amount = 3
             self._step = self.__config['NEW_RECORDS']
             self._first_date = datetime.strptime(self.__config['date']['first_new_date'], self.__config['date']['config_date_format'])
@@ -362,38 +365,9 @@ class NewDatesGenerator(IGenerator):
         return self._orderAsset
 
 
-class AllDatesGenerator(IGenerator):
-    def __init__(self, old_records_amount:int, cur_records_amount:int, new_records_amount:int, orders:Iterable[OrderAssetDTO] = None) -> None:
-        self.__config = Config()
-        if orders is None:
-            self._orderAsset = [OrderAssetDTO() for i in range(old_records_amount + cur_records_amount + new_records_amount)]
-        else:
-            self._orderAsset = orders
-        self.__new_record_amount = new_records_amount
-        self.__cur_record_amount = cur_records_amount
-        self.__old_record_amount = old_records_amount
-
-    def generate_data(self) -> Iterable[OrderAssetDTO]:
-        #getting all dates
-        generator = OldDatesGenerator(self.__old_record_amount, self._orderAsset[0:self.__old_record_amount])
-        old_dates = generator.generate_data()
-        generator = CurrentDatesGenerator(self.__cur_record_amount, self._orderAsset[self.__old_record_amount: self.__old_record_amount + self.__cur_record_amount])
-        current_dates = generator.generate_data()
-        generator = NewDatesGenerator(self.__new_record_amount, self._orderAsset[self.__old_record_amount + self.__cur_record_amount:])
-        new_dates = generator.generate_data()
-        
-        #formatting some values
-        for i in range(len(old_dates)):
-            old_dates[i].date.insert(0, None)
-        for i in range(len(new_dates)):
-            new_dates[i].date.append(None)
-
-        return old_dates + current_dates + new_dates
-
-
 class StatusGenerator(IGenerator):
-    def __init__(self, orderAsset:OrderAssetDTO = None) -> None:
-            self.__config = Config()
+    def __init__(self, config, orderAsset:OrderAssetDTO = None) -> None:
+            self.__config = config
             
             if StatusGenerator._last_random is None:
                 StatusGenerator._last_random = self.__config['first_values']['third_status']

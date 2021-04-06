@@ -23,10 +23,10 @@ class IRepository(metaclass = ABCMeta):
 
 class MySQLRepository(IRepository):
     
-    def __init__(self) -> None:
-        self.__config = Config()
-        self.__mapper = OrderHistoryToDataBaseDTOMapper()
-        self.__logger = Logger()
+    def __init__(self, config, mapper, logger) -> None:
+        self.__config = config
+        self.__mapper = mapper
+        self.__logger = logger
     
     def save_to_database(self, orders: OrderHistoryCollection) -> None:
         orders_dto_collection = self.__mapper.order_history_to_DB_DTO(orders)
